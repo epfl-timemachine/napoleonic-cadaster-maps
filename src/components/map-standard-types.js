@@ -1,6 +1,6 @@
 // Explicit import of leaflet to avoid issues with the Leaflet.heat plugin
 import L from "npm:leaflet";
-import {geometryRegistryMap, registryListToHTML, genereateBaseSommarioniBgLayers, cleanStdVal, generateSpectralColorMap} from "./common.js";
+import {geometryRegistryMap, registryListToHTML, addBaseSommarioniBgLayersToMap, cleanStdVal, generateSpectralColorMap} from "./common.js";
 
 if (L === undefined) console.error("L is undefined");
 
@@ -41,11 +41,8 @@ export function createMapAndLayers(mapContainer, featureGeojsonData, registryDat
 
 
     // Add all default layers to the map.
-    const bgLayerList = genereateBaseSommarioniBgLayers();
-    for( let [key, value] of Object.entries(bgLayerList)){
-        layerControl.addBaseLayer(value, key);
-    } 
-    bgLayerList["Cadastral Board"].addTo(map);
+    addBaseSommarioniBgLayersToMap(layerControl, map);
+    
     let registryMap = geometryRegistryMap(registryData);
     //filtering the data to keep only geometries referenced in the registry (i.e. the ones having a geometry_id value)
     let feats = geojsonData.features.filter(feature => feature.properties.geometry_id && feature.properties.parcel_number);
@@ -152,7 +149,7 @@ export function createMapAndLayers(mapContainer, featureGeojsonData, registryDat
             if (lg === undefined) {
                 lg = new L.layerGroup();
                 //add the layer to the map
-                if (enabledLayer){
+                if (enabledLayer && value !== "0 values"){
                     lg.addTo(map);
                 }
                 //store layer

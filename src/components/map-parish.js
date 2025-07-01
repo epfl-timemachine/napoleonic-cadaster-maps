@@ -6,7 +6,7 @@ if (L === undefined) console.error("L is undefined");
 
 // Leaflet.heat: https://github.com/Leaflet/Leaflet.heat/
 import "../plugins/leaflet-heat.js";
-import { geometryRegistryMap, genereateBaseSommarioniBgLayers, displayOnlyOneValueAfterComma, getColorFromGradePointsArray } from "./common.js";
+import { geometryRegistryMap, addBaseSommarioniBgLayersToMap, displayOnlyOneValueAfterComma, getColorFromGradePointsArray } from "./common.js";
 
 let gradePointsColors = [
     // [2000, ''],
@@ -61,11 +61,7 @@ export function createParishCasaAverageSurfaceHeatMap(mapContainer, parcelData, 
 
     // Crate a control to switch between layers
     const layerControl = L.control.layers().addTo(map);
-    const bgLayerList = genereateBaseSommarioniBgLayers();
-    for( let [key, value] of Object.entries(bgLayerList)){
-        layerControl.addBaseLayer(value, key);
-    } 
-    bgLayerList["Cadastral Board"].addTo(map);
+    addBaseSommarioniBgLayersToMap(layerControl, map);
 
     let registryMap = geometryRegistryMap(registryData);
     //filtering the data to keep only geometries referenced in the registry (i.e. the ones having a geometry_id value)

@@ -6,7 +6,7 @@ if (L === undefined) console.error("L is undefined");
 
 // Leaflet.heat: https://github.com/Leaflet/Leaflet.heat/
 import "../plugins/leaflet-heat.js";
-import { genereateBaseSommarioniBgLayers, displayOnlyOneValueAfterComma, getColorFromGradePointsArray } from "./common.js";
+import { addBaseSommarioniBgLayersToMap, displayOnlyOneValueAfterComma, getColorFromGradePointsArray } from "./common.js";
 
 let gradePointsColors = [
     [0.9, '#800026'],
@@ -61,11 +61,7 @@ export function createGeometryTypeColoredMap(mapContainer, parcelData) {
     const layerControl = L.control.layers().addTo(map);
 
     // Add all default layers to the map.
-    const bgLayerList = genereateBaseSommarioniBgLayers();
-    for( let [key, value] of Object.entries(bgLayerList)){
-        layerControl.addBaseLayer(value, key);
-    } 
-    bgLayerList["Cadastral Board"].addTo(map);
+    addBaseSommarioniBgLayersToMap(layerControl, map);
 
     let mapLayerGroups = {};
 
@@ -101,11 +97,7 @@ export function createParishGeometryTypeMap(map, originalParcelData, originalPar
     const parishData = structuredClone(originalParishData);
     // Crate a control to switch between layers
     const layerControl = L.control.layers().addTo(map);
-    const bgLayerList = genereateBaseSommarioniBgLayers();
-    for( let [key, value] of Object.entries(bgLayerList)){
-        layerControl.addBaseLayer(value, key);
-    } 
-    bgLayerList["Cadastral Board"].addTo(map);
+    addBaseSommarioniBgLayersToMap(layerControl, map);
 
 
     //filtering the data to keep only geometries referenced related to the type selected. 

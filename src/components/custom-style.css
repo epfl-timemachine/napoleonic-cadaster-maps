@@ -58,6 +58,11 @@ body {
   text-decoration: none;
 }
 
+
+.grayscale-map {
+  filter: grayscale(100%);
+}
+ 
 a {
     cursor:pointer;
     /* color: var(--theme-foreground-focus); */

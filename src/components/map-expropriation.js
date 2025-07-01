@@ -7,7 +7,7 @@ if (L === undefined) console.error("L is undefined");
 // Leaflet.heat: https://github.com/Leaflet/Leaflet.heat/
 import "../plugins/leaflet-heat.js";
 import { html } from "htl";
-import { geometryRegistryMap, genereateBaseSommarioniBgLayers, displayOnlyOneValueAfterComma, getColorFromGradePointsArray, cleanStdVal } from "./common.js";
+import { geometryRegistryMap, addBaseSommarioniBgLayersToMap, displayOnlyOneValueAfterComma, getColorFromGradePointsArray, cleanStdVal } from "./common.js";
 
 
 function addExpropriationDataOnParcelFeatures(feature, registryMap) {
@@ -57,11 +57,7 @@ export function createExpropriationParishMap(mapContainer, parcelData, registryD
     
         // Crate a control to switch between layers
         const layerControl = L.control.layers().addTo(map);
-        const bgLayerList = genereateBaseSommarioniBgLayers();
-        for( let [key, value] of Object.entries(bgLayerList)){
-            layerControl.addBaseLayer(value, key);
-        } 
-        bgLayerList["Cadastral Board"].addTo(map);
+        addBaseSommarioniBgLayersToMap(layerControl, map);
     
         let registryMap = geometryRegistryMap(registryData);
         //filtering the data to keep only geometries referenced in the registry (i.e. the ones having a geometry_id value)
@@ -182,11 +178,7 @@ export function createExpropriationParcelMap(mapContainer, parcelData, registryD
 
     // Crate a control to switch between layers
     const layerControl = L.control.layers().addTo(map);
-    const bgLayerList = genereateBaseSommarioniBgLayers();
-    for(let [key, value] of Object.entries(bgLayerList)){
-        layerControl.addBaseLayer(value, key);
-    } 
-    bgLayerList["Cadastral Board"].addTo(map);
+    addBaseSommarioniBgLayersToMap(layerControl, map);
 
     let registryMap = geometryRegistryMap(registryData);
     //filtering the data to keep only geometries referenced in the registry (i.e. the ones having a geometry_id value)

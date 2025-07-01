@@ -69,7 +69,7 @@ export function generateSpectralColorMap(valueList) {
     return colorMap;
 }
 
-export function genereateBaseSommarioniBgLayers(){
+export function addBaseSommarioniBgLayersToMap(layerControl, map) {
     const noLayer = L.tileLayer("", {
         attribution: ''
     });
@@ -79,16 +79,28 @@ export function genereateBaseSommarioniBgLayers(){
     const cartoLayer = L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}@2x.png", {
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
     });
-    const sommarioniBoardLayer = L.tileLayer("https://geo-timemachine.epfl.ch/geoserver/www/tilesets/venice/sommarioni/{z}/{x}/{y}.png",{
+    const sommarioniBoardLayerGray = L.tileLayer("https://geo-timemachine.epfl.ch/geoserver/www/tilesets/venice/sommarioni/{z}/{x}/{y}.png",{
+            attribution: '&copy; <a href="https://timeatlas.eu/">Time Atlas@EPFL</a>',
+            className: "grayscale-map"
+    });
+
+
+    const sommarioniBoardLayerColor = L.tileLayer("https://geo-timemachine.epfl.ch/geoserver/www/tilesets/venice/sommarioni/{z}/{x}/{y}.png",{
             attribution: '&copy; <a href="https://timeatlas.eu/">Time Atlas@EPFL</a>'
     });
 
-    return {
+    const bgLayerList = {
         "No background": noLayer,
         "OpenStreetMap": osmLayer,
         "Carto": cartoLayer,
-        "Cadastral Board": sommarioniBoardLayer
+        "Cadastral Board (BW)": sommarioniBoardLayerGray,
+        "Cadastral Board": sommarioniBoardLayerColor
     };
+
+    for( let [key, value] of Object.entries(bgLayerList)){
+        layerControl.addBaseLayer(value, key);
+    } 
+    bgLayerList["Cadastral Board (BW)"].addTo(map);
 }
 
 function formatRegistryEntryToHTML(entry, excludeCols) {
