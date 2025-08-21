@@ -23,7 +23,7 @@ import {createExpropriationParcelMap, createExpropriationParishMap, formatNameGe
 
 
 
-_Clicking on each parcel reveal from which institution the parcel used to belong, and to which state-controlled institution it was transferred. The control on the top right allows to select layer according to which group of type of institution has been expropriated._
+_Clicking on each parcel reveal from which institution the parcel used to belong, and to which state-controlled institution it was transferred. The control on the top right allows to select layer according to which group of type of institution has been expropriated. Red parcels are parcels for which an expropriation happened, but the register lacked information of the previous owner._
 
 ```js
 const parcelData = FileAttachment("./data/venice_1808_landregister_geometries.geojson").json();

@@ -130,3 +130,4 @@ Moreover, the use of these titles in 1808 does **not reflect a gendered division
 ```js
 const funMapComponents = createMapAndLayers("map-container-old-class-own", geojson, registre, 'old_entity_standardised_class', true);
 ```
+

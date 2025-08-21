@@ -9,23 +9,39 @@ import "../plugins/leaflet-heat.js";
 import { html } from "htl";
 import { geometryRegistryMap, addBaseSommarioniBgLayersToMap, displayOnlyOneValueAfterComma, getColorFromGradePointsArray, cleanStdVal } from "./common.js";
 
+const newStandOwners = [
+    "regio demanio",
+    "demanio nazionale",
+    "demanio",
+    "ministero della guerra",
+    "ministero delle finanze",
+    "ministero dell'interno",
+    "ministero della giustizia",
+    "reale corona"
+];
 
 function addExpropriationDataOnParcelFeatures(feature, registryMap) {
     const publicEntity = "venezia_entities";
     const geometry_id = String(feature.properties.geometry_id);
     const registryEntries = registryMap.get(geometry_id);
     let expropriations = [];
+    let expropriationWithoutPreviousOwner = false;
     if (registryEntries) {
         registryEntries.forEach(entry => {
-            if (entry["owner_standardised_class"] === publicEntity 
-                && entry["old_entity_standardised_class"] !== publicEntity 
-                && entry["old_entity_standardised_class"] !== ""
-                && entry["old_entity_standardised_class"] !== null) {
-                expropriations.push(entry);
+            if (entry["owner_standardised_class"] === publicEntity){
+                if (entry["old_entity_standardised_class"] !== publicEntity 
+                    && entry["old_entity_standardised_class"] !== ""
+                    && entry["old_entity_standardised_class"] !== null) {
+                    expropriations.push(entry);
+                }else if (newStandOwners.includes(entry["owner_standardised"])) {
+                    expropriations.push(entry);
+                    expropriationWithoutPreviousOwner = true;
+                }
             }
         });
     }
     feature.properties["expropriations"] = expropriations;
+    feature.properties["expropriation_without_previous_owner"] = expropriationWithoutPreviousOwner;
     return feature;
 }
 
@@ -52,7 +68,6 @@ function style(feature) {
 }
 
 export function createExpropriationParishMap(mapContainer, parcelData, registryData, parishData) {
-
         const map = L.map(mapContainer, {minZoom: 0, maxZoom:18}).setView([45.4382745, 12.3433387 ], 14);
     
         // Crate a control to switch between layers
@@ -173,6 +188,7 @@ export function returnBoundExtentOfGeometryList(geometryList) {
     return {lat: (minLat+maxLat)/2, lon: (minLng+maxLng)/2}
 }
 
+
 export function createExpropriationParcelMap(mapContainer, parcelData, registryData) {
     const map = L.map(mapContainer, {minZoom: 0, maxZoom:18}).setView([45.4382745, 12.3433387 ], 14);
 
@@ -201,15 +217,25 @@ export function createExpropriationParcelMap(mapContainer, parcelData, registryD
                 lg = new L.layerGroup();
                 mapLayerGroups[value] = lg;
             }
-
             lg.addTo(map);
             lg.addLayer(featureLayer);
         }    
 
+        let allRegistryEntries = registryMap.get(feature.properties.geometry_id);
+        if (feature.properties.expropriation_without_previous_owner) {
+            featureLayer.setStyle({
+                fillColor: "#ff0000", // Default to black if no color is found
+                weight: 0,
+                opacity: 1,
+                color:  "#ff0000",
+                fillOpacity: 0.7
+            });
+        } else {
+            // Filter out entries without a previous owner in case it was not identified to be an unknown expropriation.
+            allRegistryEntries = allRegistryEntries.filter(entry => entry["old_entity_standardised"] !== null)
+        }
         geometryIdFeatureMap.set(String(feature.properties.geometry_id), featureLayer);
 
-        let allRegistryEntries = registryMap.get(feature.properties.geometry_id);
-        allRegistryEntries = allRegistryEntries.filter(entry => entry["old_entity_standardised"] !== null)
         let html = `<dl class="registry-list">`;
         const entryFormatting = (old_owner, new_owner) => `<dt>Previous owner:</dt><dd>${old_owner}</dd><dt>Owner in 1808:</dt> <dd>${new_owner}</dd>`
         for(let i = 0; i < allRegistryEntries.length; i++) {
@@ -217,7 +243,7 @@ export function createExpropriationParcelMap(mapContainer, parcelData, registryD
             if(allRegistryEntries.length > 1){
                 html += `<dt><h3>Registry Entry #${i+1}</h3></dt><dd></dd>`;
             }
-            html += entryFormatting(entry.old_entity_standardised, entry.owner_standardised)
+            html += entryFormatting(entry.old_entity_standardised? entry.old_entity_standardised.trim(): "Unknown previous owner", entry.owner_standardised)
         }
         html += "</dl>";
         // Add a popup to the feature layer
@@ -229,10 +255,10 @@ export function createExpropriationParcelMap(mapContainer, parcelData, registryD
         return feature.properties.expropriations.map(expropriation => {
             return {
                 geometry_id : feature.properties.geometry_id,
-                previous_owner_name: expropriation.old_entity_standardised.trim(),
+                previous_owner_name: expropriation.old_entity_standardised? expropriation.old_entity_standardised.trim(): "Unknown previous owner",
                 owner_name: expropriation.owner_standardised.trim(),
                 surface: feature.properties.area,
-                group: expropriation.old_entity_standardised_class.trim()
+                group: expropriation.old_entity_standardised_class? expropriation.old_entity_standardised_class.trim(): "Unknown previous owner class"
             };
         });
     }).flat();
